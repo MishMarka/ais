@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Control Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Project Control Panel</h1>
+        <ul class="nav nav-tabs" id="controlTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="crawling-tab" data-bs-toggle="tab" data-bs-target="#crawling" type="button" role="tab">Crawling</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analyzing-tab" data-bs-toggle="tab" data-bs-target="#analyzing" type="button" role="tab">Analyzing</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="exporting-tab" data-bs-toggle="tab" data-bs-target="#exporting" type="button" role="tab">Exporting</button>
+            </li>
+        </ul>
+        <div class="tab-content mt-3" id="controlTabsContent">
+            <div class="tab-pane fade show active" id="crawling" role="tabpanel">
+                <h3>Crawling</h3>
+                <form id="crawlForm">
+                    <div class="mb-3">
+                        <label for="url" class="form-label">Website URL</label>
+                        <input type="url" class="form-control" id="url" placeholder="Enter website URL">
+                    </div>
+                    <div class="mb-3">
+                        <label for="depth" class="form-label">Crawling Depth</label>
+                        <input type="number" class="form-control" id="depth" value="2">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="startCrawling()">Start Crawling</button>
+                </form>
+                <div id="crawlResults" class="mt-3">
+                    <h4>Detected Elements</h4>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Tag</th>
+                                <th>Attributes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="elementsTable">
+                            <!-- Dynamic rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="analyzing" role="tabpanel">
+                <h3>Analyzing</h3>
+                <form method="POST" action="/analyzing">
+                    <button type="submit" class="btn btn-primary">Start Analyzing</button>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="exporting" role="tabpanel">
+                <h3>Exporting</h3>
+                <form method="POST" action="/exporting">
+                    <button type="submit" class="btn btn-primary">Start Exporting</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function startCrawling() {
+        const url = document.getElementById('url').value;
+        const depth = document.getElementById('depth').value;
+
+        fetch('/crawl', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url, depth })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById('elementsTable');
+            tableBody.innerHTML = '';
+            if (data.elements) {
+                data.elements.forEach(element => {
+                    const row = `<tr><td>${element.tag}</td><td>${JSON.stringify(element.attributes)}</td></tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } else {
+                alert(data.error || 'An error occurred');
+            }
+        });
+    }
+    </script>
+</body>
+</html>
